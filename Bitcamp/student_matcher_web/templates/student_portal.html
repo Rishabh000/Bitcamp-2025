@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Student Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">🎓 UMD Matcher</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <span class="nav-link">Hi, {{ current_user.name }}</span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+<div class="container py-5">
+
+  <!-- ✅ Updated Header with Upload Button -->
+  <div class="mb-4 d-flex justify-content-between align-items-center">
+    <h1 class="text-primary">🎓 Student Portal — Explore Professors</h1>
+    <div>
+      <a href="{{ url_for('upload_resume') }}" class="btn btn-outline-success">Upload Resume</a>
+      <a href="{{ url_for('edit_student_profile') }}" class="btn btn-outline-info ms-2">Edit Profile</a>
+      <a href="{{ url_for('my_matches') }}" class="btn btn-outline-primary ms-2">View My Matches</a>
+    </div>
+    
+  </div>
+  
+  <!-- 🔍 Filter Form -->
+  <form class="row g-3 mb-4" method="get">
+    <div class="col-md-4">
+      <label class="form-label">Filter by Role</label>
+      <select name="role" class="form-select">
+        <option value="">-- Any --</option>
+        <option value="RA">RA</option>
+        <option value="TA">TA</option>
+        <option value="Grader">Grader</option>
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label">Filter by Research Interest</label>
+      <input type="text" name="interest" class="form-control" placeholder="e.g. Robotics, AI">
+    </div>
+    <div class="col-md-2 align-self-end">
+      <button type="submit" class="btn btn-primary w-100">Apply</button>
+    </div>
+  </form>
+
+  <!-- 📋 Professors List -->
+  <div class="row g-4">
+    {% for prof in professors %}
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5 class="card-title">{{ prof.name }}</h5>
+        <p><strong>Department:</strong> {{ prof.department }}</p>
+        <p><strong>Research Interests:</strong> {{ ", ".join(prof.research_interests) }}</p>
+        <p><strong>Roles Available:</strong> {{ ", ".join(prof.positions_available) }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+</body>
+</html>

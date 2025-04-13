@@ -1,0 +1,76 @@
+/* UMD Theme Styling */
+body {
+    background: url('/static/umd_full_flag.png') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    z-index: 0;
+  }
+  
+  body > * {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .navbar {
+    background-color: #e21833 !important;
+  }
+  
+  .navbar-brand,
+  .nav-link,
+  .navbar-text {
+    color: white !important;
+    font-weight: 500;
+  }
+  
+  .btn-primary {
+    background-color: #e21833;
+    border-color: #e21833;
+  }
+  
+  .btn-primary:hover {
+    background-color: #c2152c;
+    border-color: #c2152c;
+  }
+  
+  .btn-outline-primary {
+    color: #e21833;
+    border-color: #e21833;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #e21833;
+    color: white;
+  }
+  
+  .btn-outline-info {
+    color: #ffc600;
+    border-color: #ffc600;
+  }
+  
+  .btn-outline-info:hover {
+    background-color: #ffc600;
+    color: black;
+  }
+  
+  .card {
+    border: 1px solid #e0e0e0;
+    background-color: white;
+  }
+  
+  .card-title {
+    color: #e21833;
+    font-weight: bold;
+  }
+  
