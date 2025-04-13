@@ -43,9 +43,8 @@
     <div>
       <a href="{{ url_for('upload_resume') }}" class="btn btn-outline-success">Upload Resume</a>
       <a href="{{ url_for('edit_student_profile') }}" class="btn btn-outline-info ms-2">Edit Profile</a>
-      <a href="{{ url_for('my_matches') }}" class="btn btn-outline-primary ms-2">View My Matches</a>
+      <a href="{{ url_for('student_my_matches') }}" class="btn btn-outline-primary ms-2">View My Matches</a>
     </div>
-    
   </div>
   
   <!-- 🔍 Filter Form -->
@@ -81,6 +80,37 @@
     </div>
     {% endfor %}
   </div>
+
+  <!-- 📨 Submitted Applications Section -->
+  <div class="submitted-apps-section">
+    <h4>📨 My Submitted Applications</h4>
+
+    {% if submitted_applications %}
+      {% for app in submitted_applications %}
+      <div class="card mt-3">
+        <div class="card-body">
+          <p><span class="student-name">{{ app.professor }}</span></p>
+          <p><strong>Status:</strong>
+            {% if app.status %}
+              <span class="badge bg-{{ 'success' if app.status == 'accepted' else 'danger' if app.status == 'rejected' else 'secondary' }}">
+                {{ app.status.capitalize() }}
+              </span>
+            {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+            {% endif %}
+          </p>
+          <p><strong>Your Message:</strong> {{ app.message }}</p>
+          {% if app.response_message %}
+            <p><strong>Professor's Response:</strong> {{ app.response_message }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info mt-3">You haven’t submitted any applications yet.</div>
+    {% endif %}
+  </div>
+
 </div>
 </body>
 </html>
