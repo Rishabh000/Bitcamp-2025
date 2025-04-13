@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import os
+from bson import ObjectId
 
 
 #########################################
@@ -34,6 +35,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 client = MongoClient("mongodb://localhost:27017/")
 db = client["university_roles"]
 users_col = db["users"]
+applications_col = db["applications"]
 
 
 #########################################
@@ -187,13 +189,31 @@ def home():
 @login_required
 def student_portal():
     professors = list(db.professors.find())
+
+    # Filter logic
     role_filter = request.args.get("role", "")
     interest_filter = request.args.get("interest", "")
     if role_filter:
         professors = [p for p in professors if role_filter in p.get("positions_available", [])]
     if interest_filter:
-        professors = [p for p in professors if interest_filter.lower() in " ".join(p.get("research_interests", [])).lower()]
-    return render_template("student_portal.html", professors=professors)
+        professors = [p for p in professors if interest_filter.lower() in " ".join(p.get("research_research_interests", [])).lower()]
+
+    # 🔍 Get current student details
+    student = db.students.find_one({"email": current_user.email})
+
+    # ✅ Calculate matches
+    matches = compute_matches(student, professors) if student else []
+
+    # ✅ Load submitted applications
+    submitted_apps = list(db.applications.find({"student_email": current_user.email}))
+
+    return render_template(
+        "student_portal.html",
+        professors=professors,
+        matches=matches,
+        submitted_applications=submitted_apps
+    )
+
 
 
 # Professor Portal
@@ -274,7 +294,10 @@ def upload_resume():
         if 'delete' in request.form:
             if os.path.exists(filepath):
                 os.remove(filepath)
-                users_col.update_one({"_id": ObjectId(current_user.id)}, {"$set": {"resume_uploaded": False}})
+                users_col.update_one(
+                    {"_id": ObjectId(current_user.id)},
+                    {"$set": {"resume_uploaded": False, "ready_for_matching": False}}
+                )
                 flash("Resume deleted.")
             else:
                 flash("No resume to delete.")
@@ -283,10 +306,27 @@ def upload_resume():
         file = request.files.get("resume")
         if file and allowed_file(file.filename):
             file.save(filepath)
-            users_col.update_one({"_id": ObjectId(current_user.id)}, {"$set": {"resume_uploaded": True}})
-            flash("Resume uploaded successfully.")
+
+            users_col.update_one(
+                {"_id": ObjectId(current_user.id)},
+                {"$set": {
+                    "resume_uploaded": True,
+                    "resume_path": filepath
+                }}
+            )
+            flash("Resume uploaded successfully.", "success")
+
+            # ✅ Check if profile is complete, mark ready for matching
+            student = users_col.find_one({"_id": ObjectId(current_user.id)})
+            if student.get("major") and student.get("education_level") and student.get("desired_role") and student.get("research_interests") and student.get("skills"):
+                users_col.update_one(
+                    {"_id": ObjectId(current_user.id)},
+                    {"$set": {"ready_for_matching": True}}
+                )
+
         else:
-            flash("Invalid file type. Only PDF allowed.")
+            flash("Invalid file type. Only PDF allowed.", "danger")
+
         return redirect(url_for("upload_resume"))
 
     resume_uploaded = os.path.exists(filepath)
@@ -315,7 +355,7 @@ def download_resume(student_id):
 
 @app.route("/my-matches")
 @login_required
-def my_matches():
+def student_my_matches():
     if current_user.role != "student":
         flash("Access denied.")
         return redirect(url_for("dashboard"))
@@ -357,6 +397,31 @@ def my_matches():
 
     matches = sorted(matches, key=lambda x: x["score"], reverse=True)
     return render_template("student_my_matches.html", matches=matches)
+
+@app.route("/submit_applications", methods=["POST"])
+@login_required
+def submit_applications():
+    selected = request.form.getlist("selected_professors")
+    message = request.form.get("message")
+
+    if not selected:
+        flash("No professors selected.", "warning")
+        return redirect(url_for("student_my_matches"))
+
+    for professor_name in selected:
+        applications_col.insert_one({
+            "student_name": current_user.name,
+            "student_email": current_user.email,
+            "professor_name": professor_name,
+            "message": message,
+            "status": None,
+            "response_message": None,
+        })
+
+    flash("Your applications were successfully submitted!", "success")  # ✅ Pop-up message
+    return redirect(url_for("student_my_matches"))
+
+
 
 
 #########################################
@@ -447,6 +512,45 @@ def professor_matches():
 
     matches = sorted(matches, key=lambda x: x["score"], reverse=True)
     return render_template("professor_my_matches.html", matches=matches)
+
+
+@app.route("/professor/applications")
+@login_required
+def view_applications():
+    if current_user.role != "professor":
+        flash("Unauthorized access.")
+        return redirect(url_for("dashboard"))
+
+    professor_name = current_user.name
+    applications = list(applications_col.find({"professor_name": professor_name}))
+
+    # ✅ Convert _id to string so it works in HTML forms
+    for app in applications:
+        app["_id"] = str(app["_id"])
+
+    return render_template("professor_my_matches.html", applications=applications)
+
+
+@app.route('/respond_to_application', methods=['POST'])
+@login_required
+def respond_to_application():
+    if current_user.role != "professor":
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("dashboard"))
+
+    app_id = request.form.get("application_id")
+    response = request.form.get("response")
+    message = request.form.get("message")
+
+    update_data = {
+        "status": response,
+        "response_message": message or "",
+    }
+
+    applications_col.update_one({"_id": ObjectId(app_id)}, {"$set": update_data})
+    flash("Response recorded.", "success")
+    return redirect(url_for("view_applications"))
+
 
 
 #########################################

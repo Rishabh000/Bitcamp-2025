@@ -1,6 +1,6 @@
 /* UMD Theme Styling */
 body {
-    background: url('/static/umd_full_flag.png') no-repeat center center fixed;
+    background: url('/static/umd_flag.jpg') no-repeat center center fixed;
     background-size: cover;
     font-family: 'Segoe UI', sans-serif;
     min-height: 100vh;
@@ -72,5 +72,62 @@ body {
   .card-title {
     color: #e21833;
     font-weight: bold;
+  }
+  
+  /* Custom styling for message form on student dashboard */
+  .apply-section {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+  }
+  
+  textarea.form-control {
+    min-height: 100px;
+  }
+  
+  /* List of applications for professors */
+  .applications-list {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 30px;
+  }
+  
+  .applicant-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fdfdfd;
+    border-left: 5px solid #e21833;
+  }
+  
+  /* Submitted applications section */
+  .submitted-apps-section {
+    margin-top: 40px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+  }
+  
+  .submitted-apps-section h4 {
+    color: #e21833;
+    margin-bottom: 20px;
+  }
+  
+  .submitted-apps-section .card {
+    margin-bottom: 15px;
+    border-left: 5px solid #ffc600;
+  }
+  
+  .submitted-apps-section .card-body {
+    padding: 15px;
+  }
+  
+  .submitted-apps-section .student-name {
+    font-weight: bold;
+    color: #333;
   }
   
